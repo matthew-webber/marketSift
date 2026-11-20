@@ -1,0 +1,37 @@
+* { box-sizing: border-box }
+.widget { position: fixed; z-index: 2147483647; display: flex; gap: 9px; flex-direction: column; font: 14px/1.45 Inter, system-ui, sans-serif; color: #ecf4ef; color-scheme: dark }
+.top-left, .top-right { top: 68px }
+.bottom-left, .bottom-right { bottom: 16px; flex-direction: column-reverse }
+.top-left, .bottom-left { left: 16px; align-items: flex-start }
+.top-right, .bottom-right { right: 16px; align-items: flex-end }
+button, input { font: inherit; color: inherit }
+button { cursor: pointer; background: transparent; border: 0; border-radius: 6px }
+button:hover { background: #344642 }
+button:focus-visible, input:focus-visible { outline: 2px solid #a8e9c7; outline-offset: 1px }
+.trigger { position: relative; touch-action: none; user-select: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #182727; border: 1px solid #485954; box-shadow: 0 3px 12px #0004 }
+.trigger[data-active=true], .badge { color: #132921; background: #a4e8c5 }
+.badge { position: absolute; top: -4px; right: -5px; font-size: 10px; font-weight: bold; border: 2px solid #182727; border-radius: 10px; padding: 0 4px }
+.panel { width: min(316px, calc(100vw - 32px)); max-height: calc(100dvh - 138px); overflow: auto; background: #182523; border: 1px solid #40534c; border-radius: 16px; box-shadow: 0 8px 32px #0004; padding: 18px }
+header, form, li, .segments { display: flex; align-items: center }
+header { gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #394943 }
+h2 { margin: 0; font-size: 20px; letter-spacing: -.04em }
+small { color: #b2c3ba }
+.docks { margin-left: auto; display: grid; grid-template-columns: repeat(2, 16px) }
+.docks button { padding: 0; font-size: 12px; color: #93a49c }
+.docks [aria-pressed=true] { color: #a4e8c5; background: #354d41 }
+.close { font-size: 22px }
+fieldset { padding: 0; margin: 14px 0 0; border: 0; min-width: 0 }
+legend { padding: 0; margin-bottom: 6px; font-weight: 600 }
+.segments, form { padding: 3px; border: 1px solid #45564e; border-radius: 9px; background: #111d1a }
+.segments button { flex: 1; padding: 5px }
+.segments [aria-pressed=true] { color: #c6f6da; background: #344e40 }
+label { display: inline-flex; gap: 5px; align-items: center; margin-right: 16px }
+input[type=radio] { margin: 0; accent-color: #a4e8c5 }
+form input { width: 0; flex: 1; padding: 5px; background: transparent; border: 0 }
+.mode { color: #b9e5cd; text-transform: capitalize; font-size: 12px; padding: 4px 7px }
+button:disabled { opacity: .4 }
+ul { padding: 0; margin: 8px 0; display: flex; flex-wrap: wrap; gap: 5px; list-style: none }
+li { max-width: 100%; background: #293b34; border-radius: 8px }
+li[data-enabled=false] .term { text-decoration: line-through; opacity: .6 }
+.term { overflow-wrap: anywhere; min-width: 0 }
+.clear { color: #b9d4c4; font-size: 12px; text-decoration: underline; padding: 2px 0 }
