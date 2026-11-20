@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { createShadowRootUi } from 'wxt/utils/content-script-ui/shadow-root';
+import { affectsListings } from '../../lib/listingMutation';
 import { apply, clearEffects } from '../../lib/apply';
 import { getMainScope } from '../../lib/scope';
 import { isMarketplaceContext } from '../../lib/marketplaceContext';
@@ -42,9 +43,7 @@ export default defineContentScript({
         if (active) refresh();
         return;
       }
-      const changed = records.some(record => [...record.addedNodes, ...record.removedNodes]
-        .some(node => !(node instanceof Element && (node === ui.shadowHost || node.hasAttribute('data-ms-spacer'))))
-        || record.type === 'characterData' || record.type === 'attributes');
+      const changed = records.some(affectsListings);
       if ((changed || !ui.shadowHost.isConnected) && timer === undefined) timer = window.setTimeout(refresh, 150);
     });
     observer.observe(document.body, { childList: true, characterData: true, subtree: true,

@@ -61,10 +61,10 @@ it('sorts both ways with stable ties, merges new cards and restores native style
     `<div><a href="/marketplace/item/${i}"><span dir="auto">${price}</span></a></div>`).join('');
   const order = () => [...grid.children].map(el => Number((el as HTMLElement).style.getPropertyValue('--ms-order')));
   apply(grid, { ...defaults, sort: 'price-asc' });
-  expect(order()).toEqual([2, 5, 3, 0, 4, 1]);
+  expect(order()).toEqual([-4, -1, -3, -6, -2, -5]);
   grid.insertAdjacentHTML('beforeend', '<div><a href="/marketplace/item/new"><span dir="auto">$9</span></a></div>');
   apply(grid, { ...defaults, sort: 'price-desc' });
-  expect(order()).toEqual([2, 6, 3, 5, 0, 4, 1]);
+  expect(order()).toEqual([-5, -1, -4, -2, -7, -3, -6]);
   apply(grid, defaults);
   expect(grid.querySelector('[style*="--ms-order"]')).toBeNull();
   expect(grid.hasAttribute('data-ms-layout')).toBe(false);
@@ -88,4 +88,59 @@ it('gates Facebook SPA routes', () => {
   expect(route('/marketplace/search')).toBe(true);
   expect(route('/marketplaces')).toBe(false);
   expect(route('/')).toBe(false);
+});
+
+it('settles with SmartBrowse active and still responds to Facebook listing edits', async () => {
+  const { affectsListings } = await import('../src/lib/listingMutation');
+  const scope = getMainScope();
+  const button = document.createElement('button');
+  button.className = 'sb-qa-button';
+  document.body.append(button);
+  const observer = new MutationObserver(() => {});
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true,
+    characterData: true, attributeFilter: ['aria-label', 'href', 'alt'] });
+  try {
+    const state = { ...defaults, filters: [rule('Standing Desk')] };
+    apply(scope, state);
+    const spacer = scope.querySelector('[data-ms-spacer]');
+    expect(spacer).toBeTruthy();
+    const root = scope.querySelector('[data-ms-listing-root]')!;
+    const chrome = document.createElement('div');
+    chrome.dataset.sbEffectChrome = '';
+    root.append(chrome);
+    chrome.textContent = 'Listing action';
+    button.setAttribute('aria-label', 'Focus listings');
+    expect(observer.takeRecords().some(affectsListings)).toBe(false);
+    apply(scope, state);
+    expect(scope.querySelector('[data-ms-spacer]')).toBe(spacer);
+    expect(observer.takeRecords()).toHaveLength(0);
+    root.querySelector('.item-title')!.textContent = 'Standing Desk';
+    expect(observer.takeRecords().some(affectsListings)).toBe(true);
+    expect(apply(scope, state).shown).toBe(2);
+    root.parentElement!.append(root.cloneNode(true));
+    expect(observer.takeRecords().some(affectsListings)).toBe(true);
+    expect(apply(scope, state).shown).toBe(3);
+  } finally {
+    observer.disconnect();
+  }
+});
+
+it('keeps the loading sentinel behind sorted cards during repeated layout reads', () => {
+  const grid = document.querySelector('.marketplace-grid') as HTMLElement;
+  const loader = document.createElement('div');
+  loader.setAttribute('role', 'progressbar');
+  grid.append(loader);
+  const roots = tagListings(grid);
+  const state = { ...defaults, sort: 'price-asc' as const };
+  apply(grid, state);
+  const readRank = (root: HTMLElement) => Number(root.style.getPropertyValue('--ms-order'));
+  expect(roots.every(root => readRank(root) < readRank(loader))).toBe(true);
+  Object.defineProperty(roots[0]!, 'innerText', { get() {
+    expect(roots.every(root => readRank(root) < 0)).toBe(true);
+    return 'Standing desk';
+  } });
+  apply(grid, state);
+  apply(grid, { ...state, sort: 'price-desc' });
+  expect(roots.every(root => readRank(root) < 0)).toBe(true);
+  expect(loader.style.length).toBe(0);
 });
