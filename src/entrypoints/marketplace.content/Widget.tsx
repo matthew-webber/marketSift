@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { docks, update, type Mode, type State } from '../../lib/state';
 
 export function Widget({ state, shown, total }: { state: State; shown: number; total: number }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<'panel' | 'menu' | null>(null);
   const [term, setTerm] = useState('');
   const [mode, setMode] = useState<Mode>('hide');
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -11,13 +11,17 @@ export function Widget({ state, shown, total }: { state: State; shown: number; t
   const start = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
   const active = state.filters.filter(f => f.enabled).length;
+  function close() {
+    setOpen(null);
+    trigger.current?.focus();
+  }
   useEffect(() => {
     if (!open) return;
     function outside(e: PointerEvent) {
-      if (wrapper.current && !e.composedPath().includes(wrapper.current)) setOpen(false);
+      if (wrapper.current && !e.composedPath().includes(wrapper.current)) setOpen(null);
     }
     function escape(e: KeyboardEvent) {
-      if (e.key === 'Escape') { setOpen(false); trigger.current?.focus(); }
+      if (e.key === 'Escape') close();
     }
     document.addEventListener('pointerdown', outside, true);
     document.addEventListener('keydown', escape, true);
@@ -28,7 +32,12 @@ export function Widget({ state, shown, total }: { state: State; shown: number; t
   }, [open]);
   return <div className={'widget ' + state.dock} ref={wrapper}>
     <button ref={trigger} className="trigger" data-active={active > 0 || state.sort !== 'none'}
-      aria-label="MarketSift filters and sort" aria-expanded={open} title="MarketSift"
+      aria-label="MarketSift filters and sort" aria-expanded={open !== null} title="MarketSift · Right-click for options"
+      onContextMenu={e => {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen('menu');
+      }}
       style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       onPointerDown={e => {
         if (e.button !== 0 || !e.isPrimary) return;
@@ -53,17 +62,28 @@ export function Widget({ state, shown, total }: { state: State; shown: number; t
         start.current = null;
         setOffset({ x: 0, y: 0 });
       }}
-      onClick={e => { if (!dragged.current || e.detail === 0) setOpen(!open); dragged.current = false; }}>
+      onClick={e => { if (!dragged.current || e.detail === 0) setOpen(open === 'panel' ? null : 'panel'); dragged.current = false; }}>
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v5l-4 2v-7z"/></svg>
       {active > 0 && <span className="badge">{active}</span>}
     </button>
-    {open && <section className="panel" aria-label="MarketSift">
+    {open === 'menu' && <div className="context-menu" role="menu" aria-label="MarketSift options"
+      onKeyDown={e => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const items = e.currentTarget.querySelectorAll('button');
+          (e.target === items[0] ? items[1] : items[0])?.focus();
+        }
+      }}>
+      <button role="menuitem" className="remove" onClick={() => update({ set: { widgetVisible: false } })}>Remove</button>
+      <button role="menuitem" autoFocus onClick={close}>Cancel</button>
+    </div>}
+    {open === 'panel' && <section className="panel" aria-label="MarketSift">
       <header><div><h2>MarketSift</h2><small aria-live="polite">Showing {shown} of {total}</small></div>
         <div className="docks" aria-label="Dock position">{docks.map((dock, i) =>
           <button key={dock} title={'Dock ' + dock} aria-label={'Dock ' + dock} aria-pressed={state.dock === dock}
             onClick={() => update({ set: { dock } })}>{['◤', '◥', '◣', '◢'][i]}</button>)}</div>
-        <button className="close" title="Dismiss and pause MarketSift" aria-label="Dismiss and pause MarketSift"
-          onClick={() => update({ set: { widgetVisible: false } })}>×</button>
+        <button className="close" title="Close panel" aria-label="Close panel"
+          onClick={close}>×</button>
       </header>
       <fieldset><legend>Sort</legend><div className="segments">{(['none', 'price-asc', 'price-desc'] as const).map((sort, i) =>
         <button key={sort} aria-pressed={state.sort === sort} onClick={() => update({ set: { sort } })}>

@@ -4,7 +4,7 @@ MarketSift adds a floating funnel to Facebook Marketplace in Chrome. Click it to
 
 Enter a term and press Enter to add it. Every enabled Show term must match, and any matching Hide term hides the listing. Click a term to toggle it, its mode to switch between Show and Hide, or its × to remove it. Clear all removes the terms.
 
-Drag the funnel or use the corner buttons to dock it. Escape or a click outside closes the panel. The header × pauses MarketSift and restores the native layout across tabs. Click the Chrome toolbar action to resume with your saved settings.
+Drag the funnel or use the corner buttons to dock it. The header ×, Escape, or a click outside closes the panel and keeps your sort and filters active. Right-click the funnel and choose **Remove** to pause MarketSift and restore the native layout across tabs. Choose **Cancel** to dismiss the menu. Click the Chrome toolbar action to resume with your saved settings.
 
 ## Load in Chrome
 

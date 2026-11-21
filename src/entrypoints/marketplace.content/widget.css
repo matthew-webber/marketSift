@@ -35,3 +35,7 @@ li { max-width: 100%; background: #293b34; border-radius: 8px }
 li[data-enabled=false] .term { text-decoration: line-through; opacity: .6 }
 .term { overflow-wrap: anywhere; min-width: 0 }
 .clear { color: #b9d4c4; font-size: 12px; text-decoration: underline; padding: 2px 0 }
+
+.context-menu { display: grid; min-width: 120px; padding: 4px; border: 1px solid #40534c; border-radius: 10px; background: #182523; box-shadow: 0 6px 20px #0004 }
+.context-menu button { padding: 7px 10px; text-align: left }
+.context-menu .remove { color: #ff9696 }
