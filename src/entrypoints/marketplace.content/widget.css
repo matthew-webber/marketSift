@@ -4,10 +4,10 @@
 .bottom-left, .bottom-right { bottom: 16px; flex-direction: column-reverse }
 .top-left, .bottom-left { left: 16px; align-items: flex-start }
 .top-right, .bottom-right { right: 16px; align-items: flex-end }
-button, input { font: inherit; color: inherit }
+button, input, select { font: inherit; color: inherit }
 button { cursor: pointer; background: transparent; border: 0; border-radius: 6px }
 button:hover { background: #344642 }
-button:focus-visible, input:focus-visible { outline: 2px solid #a8e9c7; outline-offset: 1px }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #a8e9c7; outline-offset: 1px }
 .trigger { position: relative; touch-action: none; user-select: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #182727; border: 1px solid #485954; box-shadow: 0 3px 12px #0004 }
 .trigger[data-active=true], .badge { color: #132921; background: #a4e8c5 }
 .badge { position: absolute; top: -4px; right: -5px; font-size: 10px; font-weight: bold; border: 2px solid #182727; border-radius: 10px; padding: 0 4px }
@@ -26,6 +26,9 @@ legend { padding: 0; margin-bottom: 6px; font-weight: 600 }
 .segments button { flex: 1; padding: 5px }
 .segments [aria-pressed=true] { color: #c6f6da; background: #344e40 }
 label { display: inline-flex; gap: 5px; align-items: center; margin-right: 16px }
+.status { display: block; margin-top: 6px }
+.state { margin: 8px 0 0 }
+select { padding: 3px 5px; background: #111d1a; border: 1px solid #45564e; border-radius: 6px }
 input[type=radio] { margin: 0; accent-color: #a4e8c5 }
 form input { width: 0; flex: 1; padding: 5px; background: transparent; border: 0 }
 .mode { color: #b9e5cd; text-transform: capitalize; font-size: 12px; padding: 4px 7px }

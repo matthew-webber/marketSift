@@ -1,5 +1,6 @@
 import { extractListing } from './extract';
 import { matches } from './filters';
+import { keepByFocus, showOnlyCount, type FocusContext } from './focus';
 import type { State } from './state';
 import { tagListings } from './tagging';
 
@@ -28,9 +29,9 @@ export function clearEffects() {
   document.querySelectorAll('[data-ms-spacer], style[data-ms-styles]').forEach(el => el.remove());
 }
 
-export function apply(scope: Document | HTMLElement, state: State) {
+export function apply(scope: Document | HTMLElement, state: State, focus?: FocusContext) {
   // Restore the unfiltered layout before reading visible text or measuring height.
-  const filtering = state.filters.some(f => f.enabled);
+  const filtering = state.filters.some(f => f.enabled) || showOnlyCount(state) > 0;
   if (!filtering && state.sort === 'none') {
     clearEffects();
     const total = tagListings(scope).length;
@@ -82,7 +83,8 @@ export function apply(scope: Document | HTMLElement, state: State) {
         if (root.style.getPropertyValue('--ms-order') !== rank) root.style.setProperty('--ms-order', rank);
       });
     }
-    const rejected = filtering ? cards.filter(({ listing }) => !matches(listing, state)) : [];
+    const rejected = filtering ? cards.filter(({ root, listing }) =>
+      !matches(listing, state) || !keepByFocus(root, state, focus)) : [];
     shown += cards.length - rejected.length;
     if (!rejected.length) continue;
     const fullHeight = parent.getBoundingClientRect().height;

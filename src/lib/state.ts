@@ -10,8 +10,17 @@ export interface State {
   sort: 'none' | 'price-asc' | 'price-desc';
   matchOn: 'title' | 'card';
   filters: Filter[];
+  /** Show only cards with Facebook's "Just listed" badge. */
+  justListed: boolean;
+  /** Show only cards inside the radius Marketplace is showing. */
+  inRadius: boolean;
+  /** Show only cards in the required state. */
+  sameState: boolean;
+  /** Uppercase state code Same state requires, or '' for the detected one. */
+  stateOverride: string;
 }
-export const defaults: State = { widgetVisible: true, dock: 'top-right', sort: 'none', matchOn: 'title', filters: [] };
+export const defaults: State = { widgetVisible: true, dock: 'top-right', sort: 'none', matchOn: 'title', filters: [],
+  justListed: false, inRadius: false, sameState: false, stateOverride: '' };
 export type Change = { set: Partial<Omit<State, 'filters'>> } | { add: Filter } |
   { toggle: string } | { flip: string } | { remove: string } | { clear: true };
 

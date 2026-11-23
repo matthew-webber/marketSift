@@ -1,7 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
+import { needsLocation, showOnlyCount, type FocusContext } from '../../lib/focus';
+import { US_STATES } from '../../lib/places';
 import { docks, update, type Mode, type State } from '../../lib/state';
 
-export function Widget({ state, shown, total }: { state: State; shown: number; total: number }) {
+const showOnly = [['justListed', 'Just listed'], ['inRadius', 'Within radius'], ['sameState', 'Same state']] as const;
+
+function locationStatus(state: State, location?: FocusContext) {
+  if (!location) return 'Reading the Marketplace location…';
+  const notes = [location.centerLabel
+    ? location.centerLabel + (location.radiusMiles ? ` · within ${location.radiusMiles} mi` : '')
+    : 'Marketplace location not detected.'];
+  if (state.inRadius && !location.radiusMiles) notes.push('Open the Marketplace location menu so Within radius can read the radius.');
+  if (state.sameState && !location.requiredState) notes.push('Choose a state below.');
+  return notes.join(' ');
+}
+
+export function Widget({ state, shown, total, location }: { state: State; shown: number; total: number; location?: FocusContext }) {
   const [open, setOpen] = useState<'panel' | 'menu' | null>(null);
   const [term, setTerm] = useState('');
   const [mode, setMode] = useState<Mode>('hide');
@@ -10,7 +24,7 @@ export function Widget({ state, shown, total }: { state: State; shown: number; t
   const trigger = useRef<HTMLButtonElement>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
-  const active = state.filters.filter(f => f.enabled).length;
+  const active = state.filters.filter(f => f.enabled).length + showOnlyCount(state);
   function close() {
     setOpen(null);
     trigger.current?.focus();
@@ -88,6 +102,15 @@ export function Widget({ state, shown, total }: { state: State; shown: number; t
       <fieldset><legend>Sort</legend><div className="segments">{(['none', 'price-asc', 'price-desc'] as const).map((sort, i) =>
         <button key={sort} aria-pressed={state.sort === sort} onClick={() => update({ set: { sort } })}>
           {['Off', 'Price ↑', 'Price ↓'][i]}</button>)}</div></fieldset>
+      <fieldset><legend>Show only</legend><div className="segments">{showOnly.map(([key, label]) =>
+        <button key={key} aria-pressed={state[key]} onClick={() => update({ set: { [key]: !state[key] } })}>{label}</button>)}</div>
+        {needsLocation(state) && <small className="status" aria-live="polite">{locationStatus(state, location)}</small>}
+        {state.sameState && <label className="state">State<select value={state.stateOverride}
+          onChange={e => update({ set: { stateOverride: e.target.value } })}>
+          <option value="">Auto{location?.detectedState ? ` (${location.detectedState})` : ''}</option>
+          {US_STATES.map(([abbr, name]) => <option key={abbr} value={abbr}>{name}</option>)}
+        </select></label>}
+      </fieldset>
       <fieldset><legend>Match on</legend>{(['title', 'card'] as const).map(matchOn =>
         <label key={matchOn}><input type="radio" name="match" checked={state.matchOn === matchOn}
           onChange={() => update({ set: { matchOn } })}/>{matchOn === 'title' ? 'Title' : 'Whole card'}</label>)}</fieldset>
